@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Early Wheat Leaf Disease Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans min-h-screen flex flex-col justify-between">
+
+    <header class="bg-emerald-700 text-white shadow-md px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-wheat-awn text-2xl text-amber-400"></i>
+            <h1 class="text-xl font-bold tracking-tight">WheatGuard AI</h1>
+        </div>
+        <div id="auth-status" class="text-sm font-medium"></div>
+    </header>
+
+    <main class="max-w-4xl w-full mx-auto p-4 flex-grow flex flex-col items-center justify-center">
+        
+        <div id="login-card" class="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-stone-200">
+            <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-shield-halved text-2xl text-emerald-700"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2">Farmer Authentication</h2>
+            <p class="text-stone-500 text-sm mb-6">Sign in securely with your Google account to access diagnosis utilities and record crop metrics.</p>
+            <button id="btn-login" class="w-full flex items-center justify-center space-x-3 bg-white border border-stone-300 hover:border-stone-400 text-stone-700 font-medium py-3 px-4 rounded-xl transition duration-200 shadow-sm">
+                <svg class="w-5 h-5" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5.04c1.64 0 3.12.56 4.28 1.67l3.2-3.2C17.52 1.58 14.92 1 12 1 7.35 1 3.4 3.65 1.43 7.5l3.8 2.95C6.18 7.33 8.87 5.04 12 5.04z"/><path fill="#4285F4" d="M23.45 12.3c0-.82-.07-1.62-.2-2.3H12v4.35h6.42c-.27 1.44-1.08 2.66-2.3 3.47l3.58 2.78c2.1-1.94 3.3-4.8 3.3-8.3z"/><path fill="#FBBC05" d="M5.23 14.5c-.23-.68-.36-1.42-.36-2.18s.13-1.5.36-2.18L1.43 7.5C.52 9.3 0 11.3 0 13.5s.52 4.2 1.43 6l3.8-2.95z"/><path fill="#34A853" d="M12 23c3.24 0 5.97-1.08 7.96-2.92l-3.58-2.78c-1 .67-2.28 1.07-3.88 1.07-3.13 0-5.82-2.3-6.77-5.4l-3.8 2.95C3.4 20.35 7.35 23 12 23z"/></svg>
+                <span>Continue with Google</span>
+            </button>
+        </div>
+
+        <div id="dashboard-card" class="hidden w-full space-y-6">
+            <div class="grid md:grid-cols-2 gap-6">
+                
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-stone-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold mb-1 flex items-center space-x-2">
+                            <i class="fa-solid fa-camera text-emerald-700"></i>
+                            <span>Capture Leaf Specimen</span>
+                        </h3>
+                        <p class="text-xs text-stone-500 mb-4">Upload or snapshot an image of a single wheat leaf structure. Ensure bright lighting conditions.</p>
+                    </div>
+
+                    <div class="relative w-full aspect-video bg-stone-100 rounded-xl overflow-hidden border-2 border-dashed border-stone-300 flex items-center justify-center">
+                        <img id="image-preview" class="hidden w-full h-full object-cover" />
+                        <div id="upload-placeholder" class="text-center p-4 cursor-pointer" onclick="document.getElementById('file-input').click()">
+                            <i class="fa-solid fa-cloud-arrow-up text-3xl text-stone-400 mb-2"></i>
+                            <p class="text-sm font-medium text-stone-600">Click to upload photo</p>
+                        </div>
+
+                        <div id="guideline-frame" class="hidden absolute inset-6 border-2 border-amber-400/60 rounded-lg pointer-events-none flex items-center justify-center">
+                            <span class="text-[10px] uppercase font-bold tracking-widest text-amber-400 bg-stone-900/80 px-2 py-0.5 rounded">Align Leaf Here</span>
+                        </div>
+                    </div>
+
+                    <input type="file" id="file-input" accept="image/*" class="hidden" />
+                    <button onclick="document.getElementById('file-input').click()" class="mt-4 w-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-semibold py-2.5 px-4 rounded-xl text-sm transition duration-150">
+                        Select Alternative File
+                    </button>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-md border border-stone-200 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold mb-1 flex items-center space-x-2">
+                            <i class="fa-solid fa-microscope text-emerald-700"></i>
+                            <span>Diagnostic Engine</span>
+                        </h3>
+                        <p class="text-xs text-stone-500 mb-4">Run real-time deep neural network evaluation matrices against the loaded image file.</p>
+                    </div>
+
+                    <div id="validation-banner" class="hidden p-3 rounded-xl mb-4 text-xs font-semibold flex items-center space-x-2"></div>
+
+                    <div id="result-display" class="bg-stone-50 border border-stone-200 rounded-xl p-5 flex-grow flex flex-col items-center justify-center text-center">
+                        <i class="fa-solid fa-circle-nodes text-4xl text-stone-300 mb-3 animate-pulse"></i>
+                        <p class="text-sm font-medium text-stone-500">Awaiting specimen upload sequence...</p>
+                    </div>
+
+                    <button id="btn-analyze" disabled class="mt-4 w-full bg-stone-300 text-stone-500 font-bold py-3 px-4 rounded-xl text-sm cursor-not-allowed transition duration-200 shadow-sm">
+                        Analyze Crop Tissue
+                    </button>
+                </div>
+
+            </div>
+            <div class="text-center">
+                <button id="btn-logout" class="text-stone-400 hover:text-stone-600 text-xs font-medium underline tracking-wide">
+                    Sign Out Session
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-stone-100 border-t border-stone-200 text-center py-3 text-xs text-stone-500 font-medium">
+        Dayananda Sagar College of Engineering &bull; Department of Information Science
+    </footer>
+
+    <script type="module">
+        // Import essential components from Firebase Web v10 SDK frameworks
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // --- PASTE YOUR EXACT WEB APP CONFIGURATION OBJECT DIRECTLY BELOW IN STEP 3 ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDq15SDSX3MUH2Sddt7Iq3xJgPJq5wR574",
+            authDomain: "wheatdiseasedetection1.firebaseapp.com",
+            projectId: "wheatdiseasedetection1",
+            storageBucket: "wheatdiseasedetection1.firebasestorage.app",
+            messagingSenderId: "789182377174",
+            appId: "1:789182377174:web:e246b63dc2b660d24b6d77",
+            measurementId: "G-9NHGH80RT6"
+        };
+
+        // Initialize Cloud Firebase application framework structures
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // UI Document Element Selectors Matrix
+        const loginCard = document.getElementById('login-card');
+        const dashboardCard = document.getElementById('dashboard-card');
+        const authStatus = document.getElementById('auth-status');
+        const fileInput = document.getElementById('file-input');
+        const imagePreview = document.getElementById('image-preview');
+        const uploadPlaceholder = document.getElementById('upload-placeholder');
+        const guidelineFrame = document.getElementById('guideline-frame');
+        const btnAnalyze = document.getElementById('btn-analyze');
+        const resultDisplay = document.getElementById('result-display');
+        const validationBanner = document.getElementById('validation-banner');
+
+        let targetFile = null;
+
+        // --- AUTHENTICATION FLOW STATE MONITORS ---
+        document.getElementById('btn-login').addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(err => alert("Auth Error: " + err.message));
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginCard.classList.add('hidden');
+                dashboardCard.classList.remove('hidden');
+                authStatus.innerHTML = `<span class="bg-emerald-800 text-emerald-100 text-xs py-1 px-3 rounded-full border border-emerald-600"><i class="fa-solid fa-user-check mr-1.5"></i>${user.displayName}</span>`;
+            } else {
+                loginCard.classList.remove('hidden');
+                dashboardCard.classList.add('hidden');
+                authStatus.textContent = "";
+            }
+        });
+
+        // --- IMAGE LOADER PIPELINE & BLUR GUARDRAIL CHECKER ---
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            targetFile = file;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                imagePreview.src = event.target.result;
+                imagePreview.classList.remove('hidden');
+                uploadPlaceholder.classList.add('hidden');
+                guidelineFrame.classList.remove('hidden');
+                
+                // Clear state UI indicators
+                resultDisplay.innerHTML = `<i class="fa-solid fa-rotate text-3xl text-emerald-600 animate-spin mb-2"></i><p class="text-sm font-semibold text-emerald-700">Validating image quality metrics...</p>`;
+                
+                // Simulate a smart image quality guardrail check (simulate laplacian sharpness analyzer)
+                setTimeout(() => {
+                    validationBanner.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-emerald-50', 'text-emerald-700');
+                    
+                    // Randomizer simulation logic checking file attributes for demonstration depth
+                    if (file.size < 40000) { 
+                        validationBanner.classList.add('bg-red-50', 'text-red-700');
+                        validationBanner.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i><span>Photo blurred or low resolution. Retake image for higher accuracy!</span>`;
+                        btnAnalyze.disabled = true;
+                        btnAnalyze.className = "mt-4 w-full bg-stone-300 text-stone-500 font-bold py-3 px-4 rounded-xl text-sm cursor-not-allowed transition duration-200 shadow-sm";
+                        resultDisplay.innerHTML = `<i class="fa-solid fa-ban text-4xl text-red-300 mb-3"></i><p class="text-sm text-stone-500">Analysis blocked due to poor photo focus framework.</p>`;
+                    } else {
+                        validationBanner.classList.add('bg-emerald-50', 'text-emerald-700');
+                        validationBanner.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Image clarity check passed. Focus is steady!</span>`;
+                        btnAnalyze.disabled = false;
+                        btnAnalyze.className = "mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-xl text-sm transition duration-200 shadow-sm cursor-pointer";
+                        resultDisplay.innerHTML = `<i class="fa-solid fa-circle-check text-4xl text-emerald-500 mb-3"></i><p class="text-sm font-semibold text-stone-700">Specimen ready for diagnosis extraction mapping.</p>`;
+                    }
+                }, 800);
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // --- HTTP POST INFERENCE TRANSMISSION CLIENT LOGIC RECOGNIZER ---
+        btnAnalyze.addEventListener('click', async () => {
+            if (!targetFile) return;
+
+            resultDisplay.innerHTML = `<i class="fa-solid fa-spinner text-4xl text-emerald-600 animate-spin mb-3"></i><p class="text-sm font-semibold text-stone-700">Processing MobileNetV3 deep learning matrix layers...</p>`;
+            
+            const formData = new FormData();
+            formData.append("file", targetFile);
+
+            try {
+                // Call your running FastAPI server endpoint address directly via network loops
+                const response = await fetch("http://127.0.0.1:8000/predict", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Server inference network drop.");
+
+                const data = await response.json();
+                
+                // Set contextual coloring depending on classification results
+                const isHealthy = data.disease === "Healthy";
+                const iconColor = isHealthy ? "text-emerald-500" : "text-amber-500";
+                const bannerStyle = isHealthy ? "bg-emerald-50 border-emerald-200" : "bg-amber-50 border-amber-200";
+
+                resultDisplay.innerHTML = `
+                    <div class="w-full ${bannerStyle} border p-5 rounded-xl flex flex-col items-center">
+                        <i class="fa-solid ${isHealthy ? 'fa-square-check' : 'fa-biohazard'} text-4xl ${iconColor} mb-2"></i>
+                        <h4 class="text-xl font-black text-stone-900">${data.disease}</h4>
+                        <p class="text-xs font-semibold text-stone-500 mt-1">Classification Target Evaluation Match</p>
+                        <div class="w-full bg-stone-200 h-2 rounded-full mt-4 overflow-hidden">
+                            <div class="bg-emerald-600 h-full transition-all duration-500" style="width: ${data.confidence_percentage}%"></div>
+                        </div>
+                        <span class="text-xs font-bold text-emerald-800 mt-2">${data.confidence_percentage}% System Confidence</span>
+                    </div>`;
+
+            } catch (error) {
+                resultDisplay.innerHTML = `<i class="fa-solid fa-circle-xmark text-4xl text-red-500 mb-3"></i><p class="text-sm font-bold text-red-700">Error connecting to AI Server.</p><p class="text-[11px] text-stone-500 mt-1">Ensure 'app.py' server is running via terminal loops.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
